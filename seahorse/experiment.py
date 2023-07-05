@@ -156,6 +156,24 @@ class SeahorseExperiment:
         plt.subplots_adjust(hspace=1)
         # plt.show()
 
+    def plot_temperature(self):
+        """Plot temperature over time."""
+        df = self.raw
+        df = df[["time_s", "Well Temperature", "Env. Temperature"]]
+        df.groupby(["time_s", "Well Temperature", "Env. Temperature"]).agg(
+            "mean"
+        ).reset_index()
+
+        plt.figure()
+        plt.plot(df["time_s"], df["Well Temperature"], label="Well Temperature")
+        plt.plot(df["time_s"], df["Env. Temperature"], label="Env. Temperature")
+
+        plt.xlabel("time [s]")
+        plt.ylabel("temperature [°C]")
+        plt.title(self.config("Project Name"))
+
+        plt.legend()
+
     def __repr__(self):
         return f"<{self.__class__.__name__}({self.config('Project Name')})>"
 
