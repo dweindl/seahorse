@@ -170,6 +170,50 @@ class SeahorseExperiment:
 
         plt.legend()
 
+    def plot_summary(self):
+        """Plot experiment summary.
+
+        Plots the mean and standard deviation of the OCR and (not yet) ECAR for each timepoint.
+        """
+        # TODO option for normalized
+        df = self.rate
+        df = df.groupby(["Measurement", "Time", "Group"]).agg(
+            {"OCR": ["count", "mean", "std"], "ECAR": ["count", "mean", "std"]}
+        )
+        df = df.OCR.reset_index()
+
+        from plotnine import (
+            aes,
+            element_blank,
+            element_line,
+            geom_errorbar,
+            geom_line,
+            ggplot,
+            labs,
+            scale_x_continuous,
+            scale_y_continuous,
+            theme,
+            theme_light,
+        )
+
+        (
+            ggplot(df)
+            + aes("Time", "mean", color="factor(Group)")
+            + geom_line()
+            + scale_x_continuous(name="Time [min]")
+            + scale_y_continuous(name="OCR [pmol/min]")
+            + geom_errorbar(aes(ymin="mean-std", ymax="mean+std"), width=2)
+            + labs(colour="")
+            + theme_light()
+            + theme(
+                # panel_border=element_blank(),
+                panel_grid_major=element_blank(),
+                panel_grid_minor=element_blank(),
+                axis_line=element_line(colour="black"),
+                legend_key=element_blank(),
+            )
+        )
+
     def __repr__(self):
         return f"<{self.__class__.__name__}({self.config('Project Name')})>"
 
