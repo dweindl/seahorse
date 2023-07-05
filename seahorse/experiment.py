@@ -109,22 +109,18 @@ class SeahorseExperiment:
         for (group,), group_df in self.rate.groupby(["Well"]):
             ax = axs[group]
             ax.set_title(group_df.Group.values[0])
-            ax.set_xlabel("")
-            ax.set_ylabel("")
-            ax.set_xticks([])
-            ax.set_yticks([])
-            ax.spines["left"].set_visible(False)
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
+            _no_axes(ax)
             ax.plot(group_df["Time"], group_df["OCR"], color="b")
-            ax.plot(group_df["Time"], group_df["ECAR"], color="r")
+            # separate axis for ECAR
+            ax2 = ax.twinx()
+            _no_axes(ax2)
+            ax2.plot(group_df["Time"], group_df["ECAR"], color="r")
             # TODO perturbations
             # TODO condition
         # TODO label rows and columns
         # TODO plot all trajectories with low alpha as background,
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
-        # plt.show()
 
     def small_multiples_raw(self):
         """Plot small multiples of all raw measurements"""
@@ -134,27 +130,27 @@ class SeahorseExperiment:
         fig, axs = plt.subplot_mosaic(
             mosaic, sharex=True, sharey=True, figsize=(18, 10)
         )
-        fig.suptitle(self.config("Project Name"))
+
         for (group,), group_df in self.raw.groupby(["Well"]):
             ax = axs[group]
             ax.set_title(group_df.Group.values[0])
-            ax.set_xlabel("")
-            ax.set_ylabel("")
-            ax.set_xticks([])
-            ax.set_yticks([])
-            ax.spines["left"].set_visible(False)
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
-            ax.plot(group_df["time_s"], group_df["O2 (mmHg)"], color="b")
-            # TODO separate axis for pH
-            ax.plot(group_df["time_s"], group_df["pH"], color="r")
+            _no_axes(ax)
+            ax.plot(
+                group_df["time_s"],
+                group_df["O2 (mmHg)"],
+                color="b",
+                zorder=2,
+                alpha=0.5,
+            )
+            # separate axis for pH
+            ax2 = ax.twinx()
+            _no_axes(ax2)
+            ax2.plot(group_df["time_s"], group_df["pH"], color="r", alpha=0.5)
             # TODO perturbations
-            # TODO condition
         # TODO label rows and columns
-        # TODO plot all trajectories with low alpha as background,
+        fig.suptitle(self.config("Project Name"))
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
-        # plt.show()
 
     def plot_temperature(self):
         """Plot temperature over time."""
@@ -198,3 +194,14 @@ def multi_well_mosaic(nrows: int, ncols: int) -> list[list[str]]:
     cols = range(1, 1 + ncols)
 
     return [[f"{r}{str(c).zfill(col_width)}" for c in cols] for r in rows]
+
+
+def _no_axes(ax):
+    """Remove all axes from a matplotlib axes object."""
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines["left"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
