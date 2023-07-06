@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from .C import CONFIGURATION, LOG, RATE, RAW
+from .C import CONFIGURATION, LOG, NORMALIZED_RATE, RATE, RAW
 
 
 class SeahorseExperiment:
@@ -16,38 +16,35 @@ class SeahorseExperiment:
         # load from directory created by `ods_to_tsv`,
         # or directly from an .ods file (much slower)
         if file.is_dir():
-            self.df_all = {}
+            self._df_all = {}
             for f in file.glob("*.tsv"):
-                self.df_all[f.stem] = pd.read_csv(f, sep="\t")
+                self._df_all[f.stem] = pd.read_csv(f, sep="\t")
         else:
-            self.df_all = pd.read_excel(file, sheet_name=None)
-
-        self.df_raw = self.df_all[RAW]
-        self.df_op = self.df_all[LOG]
+            self._df_all = pd.read_excel(file, sheet_name=None)
 
         self._preprocess_operation_log()
         self._preprocess_raw()
 
     def _preprocess_operation_log(self):
         """Preprocess OperationLog sheet"""
-        df_op = self.df_op
-        df_op["start_dt"] = pd.to_datetime(df_op["Start Time"])
-        df_op["end_dt"] = pd.to_datetime(df_op["End Time"])
+        df_log = self.log
+        df_log["start_dt"] = pd.to_datetime(df_log["Start Time"])
+        df_log["end_dt"] = pd.to_datetime(df_log["End Time"])
 
         # TODO what is to be considered t=0? end of equilibration for now
         #  6s--18s off from measurement times
         #  t0 = df_op["start_dt"][df_op["Instruction Name"] == "Initialization"].values[0]
-        t0 = df_op["end_dt"][df_op["Instruction Name"] == "Equilibrate"].values[
-            0
-        ]
+        t0 = df_log["end_dt"][
+            df_log["Instruction Name"] == "Equilibrate"
+        ].values[0]
 
-        df_op["start_s"] = (df_op["start_dt"] - t0).dt.total_seconds()
-        df_op["end_s"] = (df_op["end_dt"] - t0).dt.total_seconds()
-        df_op["duration_s"] = df_op["end_s"] - df_op["start_s"]
+        df_log["start_s"] = (df_log["start_dt"] - t0).dt.total_seconds()
+        df_log["end_s"] = (df_log["end_dt"] - t0).dt.total_seconds()
+        df_log["duration_s"] = df_log["end_s"] - df_log["start_s"]
 
     def _preprocess_raw(self):
         """Preprocess "Raw" sheet"""
-        df_raw = self.df_raw
+        df_raw = self.raw
         assert "Measurement" in df_raw.columns.values[0]
         df_raw.columns.values[0] = "Measurement"
 
@@ -60,8 +57,8 @@ class SeahorseExperiment:
         """Plot injection time span and label the perturbations."""
         assert time_unit in ["s", "min"]
         time_conv = 1 / 60 if time_unit == "min" else 1
-        df_op = self.df_op
-        injections = df_op[df_op["Command Name"] == "Inject"]
+        df_log = self.log
+        injections = df_log[df_log["Command Name"] == "Inject"]
         for _, row in injections.iterrows():
             plt.axvspan(
                 row["start_s"] * time_conv, row["end_s"] * time_conv, color="r"
@@ -73,7 +70,7 @@ class SeahorseExperiment:
                 color="r",
             )
         plt.xlabel(f"time [{time_unit}]")
-        plt.xlim(0, df_op["end_s"].max() * time_conv)
+        plt.xlim(0, df_log["end_s"].max() * time_conv)
         if show:
             plt.show()
 
@@ -84,19 +81,27 @@ class SeahorseExperiment:
 
         To be extended.
         """
-        df = self.df_all[CONFIGURATION]
+        df = self._df_all[CONFIGURATION]
         # TODO to proper data types
         config = {t._1: t._2 for t in df.itertuples() if not pd.isna(t._1)}
 
         return config[key] if key else config
 
     @property
+    def log(self):
+        return self._df_all[LOG]
+
+    @property
     def rate(self):
-        return self.df_all[RATE]
+        return self._df_all[RATE]
+
+    @property
+    def normalized_rate(self):
+        return self._df_all[NORMALIZED_RATE]
 
     @property
     def raw(self):
-        return self.df_all[RAW]
+        return self._df_all[RAW]
 
     def small_multiples_rate(self):
         """Plot small multiples of all measurements"""
@@ -171,7 +176,7 @@ class SeahorseExperiment:
 
         plt.legend()
 
-    def plot_summary(self):
+    def plot_summary_ocr(self, normalized=False):
         """Plot experiment summary.
 
         Plots the mean and standard deviation of the OCR and (not yet) ECAR for each timepoint.
