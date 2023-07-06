@@ -53,25 +53,32 @@ class SeahorseExperiment:
         t0 = df_raw["datetime"].min()
         df_raw["time_s"] = (df_raw["datetime"] - t0).dt.total_seconds()
 
-    def plot_perturbations(self, time_unit="s", show=False) -> plt.Figure:
+    def plot_perturbations(
+        self, time_unit="s", show=False, ax: plt.Axes = None, label_axes=False
+    ) -> plt.Figure:
         """Plot injection time span and label the perturbations."""
         assert time_unit in ["s", "min"]
         time_conv = 1 / 60 if time_unit == "min" else 1
         df_log = self.log
         injections = df_log[df_log["Command Name"] == "Inject"]
+
+        if ax is None:
+            ax = plt.gca()
+
         for _, row in injections.iterrows():
-            plt.axvspan(
+            ax.axvspan(
                 row["start_s"] * time_conv, row["end_s"] * time_conv, color="r"
             )
-            plt.text(
+            ax.text(
                 s=row["Instruction Name"],
                 x=row["end_s"] * time_conv,
-                y=plt.ylim()[0],
+                y=ax.get_ylim()[0],
                 color="r",
             )
-        plt.xlabel(f"time [{time_unit}]")
-        plt.xlim(0, df_log["end_s"].max() * time_conv)
-        fig = plt.gcf()
+        if label_axes:
+            ax.set_xlabel(f"time [{time_unit}]")
+            ax.set_xlim(0, df_log["end_s"].max() * time_conv)
+        fig = ax.figure
         if show:
             fig.show()
         return fig
@@ -202,6 +209,7 @@ class SeahorseExperiment:
             aes,
             element_blank,
             element_line,
+            element_text,
             geom_errorbar,
             geom_line,
             ggplot,
@@ -216,9 +224,9 @@ class SeahorseExperiment:
             ggplot(df)
             + aes("Time", "mean", color="factor(Group)")
             + geom_line()
-            + scale_x_continuous(name="Time [min]")
+            + scale_x_continuous(name="time [min]")
             + scale_y_continuous(
-                name=f"{'normalized' if normalized else ''}OCR [pmol/min]"
+                name=f"{'normalized ' if normalized else ''}OCR [pmol/min]"
             )
             + geom_errorbar(aes(ymin="mean-std", ymax="mean+std"), width=2)
             + labs(colour="")
@@ -229,9 +237,13 @@ class SeahorseExperiment:
                 panel_grid_minor=element_blank(),
                 axis_line=element_line(colour="black"),
                 legend_key=element_blank(),
+                figure_size=(12, 6),
+                text=element_text(size=18),
             )
         )
-        return gg.draw()
+        fig = gg.draw()
+        self.plot_perturbations(ax=fig.axes[0], time_unit="min")
+        return fig
 
     def aggregated_rates(self, normalized=False) -> pd.DataFrame:
         """Aggregate normalized OCR + ECAR data.
