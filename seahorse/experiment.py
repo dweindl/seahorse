@@ -103,6 +103,10 @@ class SeahorseExperiment:
     def raw(self):
         return self._df_all[RAW]
 
+    @property
+    def has_normalization(self):
+        return NORMALIZED_RATE in self._df_all
+
     def small_multiples_rate(self):
         """Plot small multiples of all measurements"""
         # assumes 96 well plates
@@ -176,13 +180,12 @@ class SeahorseExperiment:
 
         plt.legend()
 
-    def plot_summary_ocr(self, normalized=False):
+    def plot_summary_ocr(self, normalized=False) -> plt.Figure:
         """Plot experiment summary.
 
         Plots the mean and standard deviation of the OCR and (not yet) ECAR for each timepoint.
         """
-        # TODO option for normalized
-        df = self.rate
+        df = self.normalized_rate if normalized else self.rate
         df = df.groupby(["Measurement", "Time", "Group"]).agg(
             {"OCR": ["count", "mean", "std"], "ECAR": ["count", "mean", "std"]}
         )
@@ -202,12 +205,14 @@ class SeahorseExperiment:
             theme_light,
         )
 
-        (
+        gg = (
             ggplot(df)
             + aes("Time", "mean", color="factor(Group)")
             + geom_line()
             + scale_x_continuous(name="Time [min]")
-            + scale_y_continuous(name="OCR [pmol/min]")
+            + scale_y_continuous(
+                name=f"{'normalized' if normalized else ''}OCR [pmol/min]"
+            )
             + geom_errorbar(aes(ymin="mean-std", ymax="mean+std"), width=2)
             + labs(colour="")
             + theme_light()
@@ -219,13 +224,14 @@ class SeahorseExperiment:
                 legend_key=element_blank(),
             )
         )
+        return gg.draw()
 
-    def rate_normalized_agg(self) -> pd.DataFrame:
+    def aggregated_rates(self, normalized=False) -> pd.DataFrame:
         """Aggregate normalized OCR + ECAR data.
 
         For now, report mean+sd.
         """
-        df = self.rate
+        df = self.normalized_rate if normalized else self.rate
         df = df.groupby(["Measurement", "Time", "Group"]).agg(
             count=("Measurement", "count"),
             OCR_mean=("OCR", "mean"),
