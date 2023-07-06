@@ -83,7 +83,7 @@ class SeahorseExperiment:
             fig.show()
         return fig
 
-    def config(self, key: str = None) -> dict:
+    def config(self, key: str = None) -> dict | str:
         """Get assay configuration as dict, or a specific entry.
 
         For now, only the simple key, value pairs.
@@ -113,6 +113,10 @@ class SeahorseExperiment:
         return self._df_all[RAW]
 
     @property
+    def project_name(self) -> str:
+        return self.config("Project Name")
+
+    @property
     def has_normalization(self):
         """Whether the experiment has normalized data."""
         return NORMALIZED_RATE in self._df_all
@@ -125,7 +129,7 @@ class SeahorseExperiment:
         fig, axs = plt.subplot_mosaic(
             mosaic, sharex=True, sharey=True, figsize=(18, 10)
         )
-        fig.suptitle(self.config("Project Name"))
+        fig.suptitle(self.project_name)
         for (group,), group_df in self.rate.groupby(["Well"]):
             ax = axs[group]
             ax.set_title(group_df.Group.values[0])
@@ -170,7 +174,7 @@ class SeahorseExperiment:
             ax2.plot(group_df["time_s"], group_df["pH"], color="r", alpha=0.5)
             # TODO perturbations
         # TODO label rows and columns
-        fig.suptitle(self.config("Project Name"))
+        fig.suptitle(self.project_name)
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
         return fig
@@ -189,7 +193,7 @@ class SeahorseExperiment:
 
         plt.xlabel("time [s]")
         plt.ylabel("temperature [°C]")
-        plt.title(self.config("Project Name"))
+        plt.title(self.project_name)
 
         plt.legend()
         return fig
@@ -213,6 +217,7 @@ class SeahorseExperiment:
             geom_errorbar,
             geom_line,
             ggplot,
+            ggtitle,
             labs,
             scale_x_continuous,
             scale_y_continuous,
@@ -240,6 +245,7 @@ class SeahorseExperiment:
                 figure_size=(12, 6),
                 text=element_text(size=18),
             )
+            + ggtitle(self.project_name)
         )
         fig = gg.draw()
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
