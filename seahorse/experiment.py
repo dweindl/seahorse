@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 from .C import CONFIGURATION, LOG, RATE, RAW
@@ -213,6 +214,21 @@ class SeahorseExperiment:
                 legend_key=element_blank(),
             )
         )
+
+    def rate_normalized_agg(self) -> pd.DataFrame:
+        """Aggregate normalized OCR + ECAR data.
+
+        For now, report mean+sd.
+        """
+        df = self.rate
+        df = df.groupby(["Measurement", "Time", "Group"]).agg(
+            count=("Measurement", "count"),
+            OCR_mean=("OCR", "mean"),
+            OCR_std=("OCR", "std"),
+            ECAR_mean=("ECAR", "mean"),
+            ECAR_std=("ECAR", "std"),
+        )
+        return df.reset_index()
 
     def __repr__(self):
         return f"<{self.__class__.__name__}({self.config('Project Name')})>"
