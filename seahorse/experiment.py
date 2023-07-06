@@ -53,7 +53,7 @@ class SeahorseExperiment:
         t0 = df_raw["datetime"].min()
         df_raw["time_s"] = (df_raw["datetime"] - t0).dt.total_seconds()
 
-    def plot_perturbations(self, time_unit="s", show=False):
+    def plot_perturbations(self, time_unit="s", show=False) -> plt.Figure:
         """Plot injection time span and label the perturbations."""
         assert time_unit in ["s", "min"]
         time_conv = 1 / 60 if time_unit == "min" else 1
@@ -71,8 +71,10 @@ class SeahorseExperiment:
             )
         plt.xlabel(f"time [{time_unit}]")
         plt.xlim(0, df_log["end_s"].max() * time_conv)
+        fig = plt.gcf()
         if show:
-            plt.show()
+            fig.show()
+        return fig
 
     def config(self, key: str = None) -> dict:
         """Get assay configuration as dict, or a specific entry.
@@ -105,9 +107,10 @@ class SeahorseExperiment:
 
     @property
     def has_normalization(self):
+        """Whether the experiment has normalized data."""
         return NORMALIZED_RATE in self._df_all
 
-    def small_multiples_rate(self):
+    def small_multiples_rate(self) -> plt.Figure:
         """Plot small multiples of all measurements"""
         # assumes 96 well plates
         assert 96 == len(self.rate["Well"].unique())
@@ -132,7 +135,9 @@ class SeahorseExperiment:
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
 
-    def small_multiples_raw(self):
+        return fig
+
+    def small_multiples_raw(self) -> plt.Figure:
         """Plot small multiples of all raw measurements"""
         # assumes 96 well plates
         assert 96 == len(self.raw["Well"].unique())
@@ -161,8 +166,9 @@ class SeahorseExperiment:
         fig.suptitle(self.config("Project Name"))
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
+        return fig
 
-    def plot_temperature(self):
+    def plot_temperature(self) -> plt.Figure:
         """Plot temperature over time."""
         df = self.raw
         df = df[["time_s", "Well Temperature", "Env. Temperature"]]
@@ -170,7 +176,7 @@ class SeahorseExperiment:
             "mean"
         ).reset_index()
 
-        plt.figure()
+        fig = plt.figure()
         plt.plot(df["time_s"], df["Well Temperature"], label="Well Temperature")
         plt.plot(df["time_s"], df["Env. Temperature"], label="Env. Temperature")
 
@@ -179,6 +185,7 @@ class SeahorseExperiment:
         plt.title(self.config("Project Name"))
 
         plt.legend()
+        return fig
 
     def plot_summary_ocr(self, normalized=False) -> plt.Figure:
         """Plot experiment summary.
