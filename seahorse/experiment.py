@@ -85,8 +85,8 @@ class SeahorseExperiment:
         """
         df = self._df_all[CONFIGURATION]
         # TODO to proper data types
-        config = {t._1: t._2 for t in df.itertuples() if not pd.isna(t._1)}
-
+        config = {t[1]: t[2] for t in df.itertuples() if not pd.isna(t[1])}
+        config = {k.removesuffix(":").strip(): v for k, v in config.items()}
         return config[key] if key else config
 
     @property
