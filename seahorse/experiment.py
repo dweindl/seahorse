@@ -28,12 +28,17 @@ class SeahorseExperiment:
     def _preprocess_operation_log(self):
         """Preprocess OperationLog sheet"""
         df_log = self.log
+
+        # pd.to_datetime sometimes raises:
+        #  UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`.
+        #  To ensure parsing is consistent and as-expected, please specify a format.
+        #  Happens only if date format was messed up. Initially it corresponds to `2022-03-16 16:28:57`, which pandas
+        #  handles well.
         df_log["start_dt"] = pd.to_datetime(df_log["Start Time"])
         df_log["end_dt"] = pd.to_datetime(df_log["End Time"])
 
         # TODO what is to be considered t=0? end of equilibration for now
         #  6s--18s off from measurement times
-        #  t0 = df_op["start_dt"][df_op["Instruction Name"] == "Initialization"].values[0]
         t0 = df_log["end_dt"][
             df_log["Instruction Name"] == "Equilibrate"
         ].values[0]
@@ -45,11 +50,13 @@ class SeahorseExperiment:
     def _preprocess_raw(self):
         """Preprocess "Raw" sheet"""
         df_raw = self.raw
+        # Remove that funny comment, that pandas.read_excel doesn't want to ignore
         assert "Measurement" in df_raw.columns.values[0]
         df_raw.columns.values[0] = "Measurement"
 
         df_raw["datetime"] = pd.to_datetime(df_raw.TimeStamp, format="%H:%M:%S")
-        # TODO t0 unclear here
+        # TODO t0 is unclear here. It roughly (up to ~30s) corresponds to
+        #  t_end_Equilibration - t_start_Home in the Operations Log
         t0 = df_raw["datetime"].min()
         df_raw["time_s"] = (df_raw["datetime"] - t0).dt.total_seconds()
 
