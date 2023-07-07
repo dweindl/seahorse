@@ -150,8 +150,7 @@ class SeahorseExperiment:
             _no_axes(ax2)
             ax2.plot(group_df["Time"], group_df["ECAR"], color="r")
             # TODO perturbations
-            # TODO condition
-        # TODO label rows and columns
+        # TODO label rows and columns https://stackoverflow.com/questions/25812255/row-and-column-headers-in-matplotlibs-subplots
         # TODO plot all trajectories with low alpha as background,
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
@@ -183,7 +182,7 @@ class SeahorseExperiment:
             _no_axes(ax2)
             ax2.plot(group_df["time_s"], group_df["pH"], color="r", alpha=0.5)
             # TODO perturbations
-        # TODO label rows and columns
+        # TODO label rows and columns https://stackoverflow.com/questions/25812255/row-and-column-headers-in-matplotlibs-subplots
         fig.suptitle(self.project_name)
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
@@ -211,7 +210,7 @@ class SeahorseExperiment:
     def plot_summary_ocr(self, normalized=False) -> plt.Figure:
         """Plot experiment summary.
 
-        Plots the mean and standard deviation of the OCR and (not yet) ECAR for each timepoint.
+        Plots the mean and standard deviation of the OCR for each timepoint.
         """
         df = self.normalized_rate if normalized else self.rate
         df = df.groupby(["Measurement", "Time", "Group"]).agg(
@@ -242,6 +241,59 @@ class SeahorseExperiment:
             + scale_x_continuous(name="time [min]")
             + scale_y_continuous(
                 name=f"{'normalized ' if normalized else ''}OCR [pmol/min]"
+            )
+            + geom_errorbar(aes(ymin="mean-std", ymax="mean+std"), width=2)
+            + labs(colour="")
+            + theme_light()
+            + theme(
+                # panel_border=element_blank(),
+                panel_grid_major=element_blank(),
+                panel_grid_minor=element_blank(),
+                axis_line=element_line(colour="black"),
+                legend_key=element_blank(),
+                figure_size=(12, 6),
+                text=element_text(size=18),
+            )
+            + ggtitle(self.project_name)
+        )
+        fig = gg.draw()
+        self.plot_perturbations(ax=fig.axes[0], time_unit="min")
+        return fig
+
+    def plot_summary_ecar(self, normalized=False) -> plt.Figure:
+        """Plot experiment summary.
+
+        Plots the mean and standard deviation of the ECAR for each timepoint.
+        """
+        df = self.normalized_rate if normalized else self.rate
+        df = df.groupby(["Measurement", "Time", "Group"]).agg(
+            {"OCR": ["count", "mean", "std"], "ECAR": ["count", "mean", "std"]}
+        )
+        df = df.ECAR.reset_index()
+
+        from plotnine import (
+            aes,
+            element_blank,
+            element_line,
+            element_text,
+            geom_errorbar,
+            geom_line,
+            ggplot,
+            ggtitle,
+            labs,
+            scale_x_continuous,
+            scale_y_continuous,
+            theme,
+            theme_light,
+        )
+
+        gg = (
+            ggplot(df)
+            + aes("Time", "mean", color="factor(Group)")
+            + geom_line()
+            + scale_x_continuous(name="time [min]")
+            + scale_y_continuous(
+                name=f"{'normalized ' if normalized else ''}ECAR [mpH/min]"
             )
             + geom_errorbar(aes(ymin="mean-std", ymax="mean+std"), width=2)
             + labs(colour="")
