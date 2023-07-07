@@ -23,5 +23,8 @@ def ods_to_tsv(file: Path | str, outdir: Path | str):
         # skip useless sheets
         if sheet_name == "styles":
             continue
+        # e.g. if there is no normalization, normalized data sheets are still present, but empty and hidden
+        if df.empty:
+            continue
 
         df.to_csv(outdir / f"{sheet_name}.tsv", sep="\t", index=False)

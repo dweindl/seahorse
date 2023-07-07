@@ -126,7 +126,10 @@ class SeahorseExperiment:
     @property
     def has_normalization(self):
         """Whether the experiment has normalized data."""
-        return NORMALIZED_RATE in self._df_all
+        return (
+            NORMALIZED_RATE in self._df_all
+            and not self._df_all[NORMALIZED_RATE].empty
+        )
 
     def small_multiples_rate(self) -> plt.Figure:
         """Plot small multiples of all measurements"""
