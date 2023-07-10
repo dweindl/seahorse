@@ -207,29 +207,29 @@ class SeahorseExperiment:
         plt.legend()
         return fig
 
-    def plot_summary_ocr(self, normalized=False) -> plt.Figure:
+    def plot_summary_ocr(self, normalized=False, replicates=True) -> plt.Figure:
         """Plot experiment summary.
 
         Plots the mean and standard deviation of the OCR for each timepoint.
         """
         df = self.normalized_rate if normalized else self.rate
-        df = df.groupby(["Measurement", "Time", "Group"]).agg(
+        df_grouped = df.groupby(["Measurement", "Time", "Group"]).agg(
             {"OCR": ["count", "mean", "std"], "ECAR": ["count", "mean", "std"]}
         )
-        df = df.OCR.reset_index()
+        df_grouped = df_grouped.OCR.reset_index()
 
         import plotnine as p9
 
         gg = (
-            p9.ggplot(df)
+            p9.ggplot(df_grouped)
             + p9.aes("Time", "mean", color="factor(Group)")
-            + p9.geom_line()
+            + p9.geom_line(size=2)
             + p9.scale_x_continuous(name="time [min]")
             + p9.scale_y_continuous(
                 name=f"{'normalized ' if normalized else ''}OCR [pmol/min]"
             )
             + p9.geom_errorbar(
-                p9.aes(ymin="mean-std", ymax="mean+std"), width=2
+                p9.aes(ymin="mean-std", ymax="mean+std"), width=2, size=1
             )
             + p9.labs(colour="")
             + p9.theme_light()
@@ -244,33 +244,43 @@ class SeahorseExperiment:
             )
             + p9.ggtitle(self.project_name)
         )
+
+        if replicates:
+            gg += p9.geom_line(
+                p9.aes(x="Time", y="OCR", group="Well", color="factor(Group)"),
+                alpha=0.3,
+                data=df,
+            )
+
         fig = gg.draw()
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
         return fig
 
-    def plot_summary_ecar(self, normalized=False) -> plt.Figure:
+    def plot_summary_ecar(
+        self, normalized=False, replicates=True
+    ) -> plt.Figure:
         """Plot experiment summary.
 
         Plots the mean and standard deviation of the ECAR for each timepoint.
         """
         df = self.normalized_rate if normalized else self.rate
-        df = df.groupby(["Measurement", "Time", "Group"]).agg(
+        df_grouped = df.groupby(["Measurement", "Time", "Group"]).agg(
             {"OCR": ["count", "mean", "std"], "ECAR": ["count", "mean", "std"]}
         )
-        df = df.ECAR.reset_index()
+        df_grouped = df_grouped.ECAR.reset_index()
 
         import plotnine as p9
 
         gg = (
-            p9.ggplot(df)
+            p9.ggplot(df_grouped)
             + p9.aes("Time", "mean", color="factor(Group)")
-            + p9.geom_line()
+            + p9.geom_line(size=2)
             + p9.scale_x_continuous(name="time [min]")
             + p9.scale_y_continuous(
                 name=f"{'normalized ' if normalized else ''}ECAR [mpH/min]"
             )
             + p9.geom_errorbar(
-                p9.aes(ymin="mean-std", ymax="mean+std"), width=2
+                p9.aes(ymin="mean-std", ymax="mean+std"), width=2, size=1
             )
             + p9.labs(colour="")
             + p9.theme_light()
@@ -285,6 +295,14 @@ class SeahorseExperiment:
             )
             + p9.ggtitle(self.project_name)
         )
+
+        if replicates:
+            gg += p9.geom_line(
+                p9.aes(x="Time", y="ECAR", group="Well", color="factor(Group)"),
+                alpha=0.3,
+                data=df,
+            )
+
         fig = gg.draw()
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
         return fig
