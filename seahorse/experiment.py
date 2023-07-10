@@ -61,7 +61,12 @@ class SeahorseExperiment:
         df_raw["time_s"] = (df_raw["datetime"] - t0).dt.total_seconds()
 
     def plot_perturbations(
-        self, time_unit="s", show=False, ax: plt.Axes = None, label_axes=False
+        self,
+        time_unit="s",
+        show=False,
+        ax: plt.Axes = None,
+        label_axes=False,
+        fontsize=18,
     ) -> plt.Figure:
         """Plot injection time span and label the perturbations."""
         assert time_unit in ["s", "min"]
@@ -76,11 +81,13 @@ class SeahorseExperiment:
             ax.axvspan(
                 row["start_s"] * time_conv, row["end_s"] * time_conv, color="r"
             )
-            ax.text(
-                s=row["Instruction Name"],
-                x=row["end_s"] * time_conv,
-                y=ax.get_ylim()[0],
+            ax.annotate(
+                text=row["Instruction Name"],
+                xy=(row["start_s"] * time_conv, ax.get_ylim()[1]),
+                xytext=(0.1 * fontsize, -fontsize),
+                textcoords="offset points",
                 color="r",
+                fontsize=fontsize,
             )
         if label_axes:
             ax.set_xlabel(f"time [{time_unit}]")
