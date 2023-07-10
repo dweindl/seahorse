@@ -218,43 +218,31 @@ class SeahorseExperiment:
         )
         df = df.OCR.reset_index()
 
-        from plotnine import (
-            aes,
-            element_blank,
-            element_line,
-            element_text,
-            geom_errorbar,
-            geom_line,
-            ggplot,
-            ggtitle,
-            labs,
-            scale_x_continuous,
-            scale_y_continuous,
-            theme,
-            theme_light,
-        )
+        import plotnine as p9
 
         gg = (
-            ggplot(df)
-            + aes("Time", "mean", color="factor(Group)")
-            + geom_line()
-            + scale_x_continuous(name="time [min]")
-            + scale_y_continuous(
+            p9.ggplot(df)
+            + p9.aes("Time", "mean", color="factor(Group)")
+            + p9.geom_line()
+            + p9.scale_x_continuous(name="time [min]")
+            + p9.scale_y_continuous(
                 name=f"{'normalized ' if normalized else ''}OCR [pmol/min]"
             )
-            + geom_errorbar(aes(ymin="mean-std", ymax="mean+std"), width=2)
-            + labs(colour="")
-            + theme_light()
-            + theme(
-                # panel_border=element_blank(),
-                panel_grid_major=element_blank(),
-                panel_grid_minor=element_blank(),
-                axis_line=element_line(colour="black"),
-                legend_key=element_blank(),
-                figure_size=(12, 6),
-                text=element_text(size=18),
+            + p9.geom_errorbar(
+                p9.aes(ymin="mean-std", ymax="mean+std"), width=2
             )
-            + ggtitle(self.project_name)
+            + p9.labs(colour="")
+            + p9.theme_light()
+            + p9.theme(
+                # panel_border=element_blank(),
+                panel_grid_major=p9.element_blank(),
+                panel_grid_minor=p9.element_blank(),
+                axis_line=p9.element_line(colour="black"),
+                legend_key=p9.element_blank(),
+                figure_size=(12, 6),
+                text=p9.element_text(size=18),
+            )
+            + p9.ggtitle(self.project_name)
         )
         fig = gg.draw()
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
@@ -271,43 +259,31 @@ class SeahorseExperiment:
         )
         df = df.ECAR.reset_index()
 
-        from plotnine import (
-            aes,
-            element_blank,
-            element_line,
-            element_text,
-            geom_errorbar,
-            geom_line,
-            ggplot,
-            ggtitle,
-            labs,
-            scale_x_continuous,
-            scale_y_continuous,
-            theme,
-            theme_light,
-        )
+        import plotnine as p9
 
         gg = (
-            ggplot(df)
-            + aes("Time", "mean", color="factor(Group)")
-            + geom_line()
-            + scale_x_continuous(name="time [min]")
-            + scale_y_continuous(
+            p9.ggplot(df)
+            + p9.aes("Time", "mean", color="factor(Group)")
+            + p9.geom_line()
+            + p9.scale_x_continuous(name="time [min]")
+            + p9.scale_y_continuous(
                 name=f"{'normalized ' if normalized else ''}ECAR [mpH/min]"
             )
-            + geom_errorbar(aes(ymin="mean-std", ymax="mean+std"), width=2)
-            + labs(colour="")
-            + theme_light()
-            + theme(
-                # panel_border=element_blank(),
-                panel_grid_major=element_blank(),
-                panel_grid_minor=element_blank(),
-                axis_line=element_line(colour="black"),
-                legend_key=element_blank(),
-                figure_size=(12, 6),
-                text=element_text(size=18),
+            + p9.geom_errorbar(
+                p9.aes(ymin="mean-std", ymax="mean+std"), width=2
             )
-            + ggtitle(self.project_name)
+            + p9.labs(colour="")
+            + p9.theme_light()
+            + p9.theme(
+                # panel_border=element_blank(),
+                panel_grid_major=p9.element_blank(),
+                panel_grid_minor=p9.element_blank(),
+                axis_line=p9.element_line(colour="black"),
+                legend_key=p9.element_blank(),
+                figure_size=(12, 6),
+                text=p9.element_text(size=18),
+            )
+            + p9.ggtitle(self.project_name)
         )
         fig = gg.draw()
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
