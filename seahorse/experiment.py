@@ -314,6 +314,127 @@ class SeahorseExperiment:
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
         return fig
 
+    def plot_summary_ph(self, replicates=True) -> plt.Figure:
+        """Plot experiment summary.
+
+        Plots the mean and standard deviation of the pH for each timepoint.
+        """
+        df = self.raw
+        df["time_min"] = df.time_s / 60
+        df_grouped = (
+            df.groupby(["Measurement", "time_min", "Group"])
+            .agg(
+                count=("Measurement", "count"),
+                O2_mean=("O2 (mmHg)", "mean"),
+                O2_std=("O2 (mmHg)", "std"),
+                pH_mean=("pH", "mean"),
+                pH_std=("pH", "std"),
+            )
+            .reset_index()
+        )
+
+        import plotnine as p9
+
+        gg = (
+            p9.ggplot(df_grouped)
+            + p9.aes("time_min", "pH_mean", color="factor(Group)")
+            + p9.geom_line(size=2)
+            + p9.scale_x_continuous(name="time [min]")
+            + p9.scale_y_continuous(name="pH")
+            + p9.geom_errorbar(
+                p9.aes(ymin="pH_mean-pH_std", ymax="pH_mean+pH_std"),
+                width=1,
+                size=1,
+            )
+            + p9.labs(colour="")
+            + p9.theme_light()
+            + p9.theme(
+                # panel_border=element_blank(),
+                panel_grid_major=p9.element_blank(),
+                panel_grid_minor=p9.element_blank(),
+                axis_line=p9.element_line(colour="black"),
+                legend_key=p9.element_blank(),
+                figure_size=(12, 6),
+                text=p9.element_text(size=18),
+            )
+            + p9.ggtitle(self.project_name)
+        )
+
+        if replicates:
+            gg += p9.geom_line(
+                p9.aes(
+                    x="time_min", y="pH", group="Well", color="factor(Group)"
+                ),
+                alpha=0.3,
+                data=df,
+            )
+
+        fig = gg.draw()
+        self.plot_perturbations(ax=fig.axes[0], time_unit="min")
+        return fig
+
+    def plot_summary_o2(self, replicates=True) -> plt.Figure:
+        """Plot experiment summary.
+
+        Plots the mean and standard deviation of the O2 for each timepoint.
+        """
+        df = self.raw
+        df["time_min"] = df.time_s / 60
+        df_grouped = (
+            df.groupby(["Measurement", "time_min", "Group"])
+            .agg(
+                count=("Measurement", "count"),
+                O2_mean=("O2 (mmHg)", "mean"),
+                O2_std=("O2 (mmHg)", "std"),
+                pH_mean=("pH", "mean"),
+                pH_std=("pH", "std"),
+            )
+            .reset_index()
+        )
+
+        import plotnine as p9
+
+        gg = (
+            p9.ggplot(df_grouped)
+            + p9.aes("time_min", "O2_mean", color="factor(Group)")
+            + p9.geom_line(size=2)
+            + p9.scale_x_continuous(name="time [min]")
+            + p9.scale_y_continuous(name="O2 (mmHg)")
+            + p9.geom_errorbar(
+                p9.aes(ymin="O2_mean-O2_std", ymax="O2_mean+O2_std"),
+                width=1,
+                size=1,
+            )
+            + p9.labs(colour="")
+            + p9.theme_light()
+            + p9.theme(
+                # panel_border=element_blank(),
+                panel_grid_major=p9.element_blank(),
+                panel_grid_minor=p9.element_blank(),
+                axis_line=p9.element_line(colour="black"),
+                legend_key=p9.element_blank(),
+                figure_size=(12, 6),
+                text=p9.element_text(size=18),
+            )
+            + p9.ggtitle(self.project_name)
+        )
+
+        if replicates:
+            gg += p9.geom_line(
+                p9.aes(
+                    x="time_min",
+                    y="O2 (mmHg)",
+                    group="Well",
+                    color="factor(Group)",
+                ),
+                alpha=0.3,
+                data=df,
+            )
+
+        fig = gg.draw()
+        self.plot_perturbations(ax=fig.axes[0], time_unit="min")
+        return fig
+
     def aggregated_rates(self, normalized=False) -> pd.DataFrame:
         """Aggregate normalized OCR + ECAR data.
 
