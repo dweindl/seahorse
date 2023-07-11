@@ -435,6 +435,52 @@ class SeahorseExperiment:
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
         return fig
 
+    def plot_to_dir(
+        self, dirpath: str | Path, prefix: str = "", suffix: str = ".png"
+    ):
+        """Save plots to directory.
+
+        Parameters
+        ----------
+        dirpath:
+            Path to directory to save plots to. Will be created if it doesn't exist.
+        prefix:
+            Optional prefix to add to each filename.
+        suffix:
+            Suffix to append to each filename, including the file extension.
+            Allows choosing a different file format, e.g. ".svg".
+        """
+        dirpath = Path(dirpath)
+        dirpath.mkdir(parents=True, exist_ok=True)
+
+        fig = self.plot_summary_ph()
+        fig.savefig(dirpath / f"{prefix}summary_ph{suffix}")
+
+        fig = self.plot_summary_o2()
+        fig.savefig(dirpath / f"{prefix}summary_o2{suffix}")
+
+        fig = self.plot_summary_ocr(normalized=False)
+        fig.savefig(dirpath / f"{prefix}summary_ocr{suffix}")
+
+        fig = self.plot_summary_ecar(normalized=False)
+        fig.savefig(dirpath / f"{prefix}summary_ecar{suffix}")
+
+        if self.has_normalization:
+            fig = self.plot_summary_ecar(normalized=True)
+            fig.savefig(dirpath / f"{prefix}summary_ecar_normalized{suffix}")
+
+            fig = self.plot_summary_ocr(normalized=True)
+            fig.savefig(dirpath / f"{prefix}summary_ocr_normalized{suffix}")
+
+        self.small_multiples_rate()
+        plt.savefig(dirpath / f"{prefix}small_multiples_rate{suffix}")
+
+        self.small_multiples_raw()
+        plt.savefig(dirpath / f"{prefix}small_multiples_raw{suffix}")
+
+        self.plot_temperature()
+        plt.savefig(dirpath / f"{prefix}temperature{suffix}")
+
     def aggregated_rates(self, normalized=False) -> pd.DataFrame:
         """Aggregate normalized OCR + ECAR data.
 
