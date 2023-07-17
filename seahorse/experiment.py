@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 from .C import CONFIGURATION, LOG, NORMALIZED_RATE, RATE, RAW
@@ -10,7 +9,7 @@ from .C import CONFIGURATION, LOG, NORMALIZED_RATE, RATE, RAW
 class SeahorseExperiment:
     """Class representing a Seahorse experiment / result file"""
 
-    def __init__(self, file: Path | str):
+    def __init__(self, file: Path | str, title: str = None):
         file = Path(file)
 
         # load from directory created by `ods_to_tsv`,
@@ -24,6 +23,7 @@ class SeahorseExperiment:
 
         self._preprocess_operation_log()
         self._preprocess_raw()
+        self._title = title
 
     def _preprocess_operation_log(self):
         """Preprocess OperationLog sheet"""
@@ -131,6 +131,17 @@ class SeahorseExperiment:
         return self.config("Project Name")
 
     @property
+    def assay_name(self) -> str:
+        return self.config("Assay Name")
+
+    @property
+    def title(self) -> str:
+        if self._title is not None:
+            return self._title
+
+        return self.assay_name or self.project_name
+
+    @property
     def has_normalization(self):
         """Whether the experiment has normalized data."""
         return (
@@ -146,7 +157,7 @@ class SeahorseExperiment:
         fig, axs = plt.subplot_mosaic(
             mosaic, sharex=True, sharey=True, figsize=(18, 10)
         )
-        fig.suptitle(self.project_name)
+        fig.suptitle(self.title)
         for (group,), group_df in self.rate.groupby(["Well"]):
             ax = axs[group]
             ax.set_title(group_df.Group.values[0])
@@ -190,7 +201,7 @@ class SeahorseExperiment:
             ax2.plot(group_df["time_s"], group_df["pH"], color="r", alpha=0.5)
             # TODO perturbations
         # TODO label rows and columns https://stackoverflow.com/questions/25812255/row-and-column-headers-in-matplotlibs-subplots
-        fig.suptitle(self.project_name)
+        fig.suptitle(self.title)
         plt.tight_layout()
         plt.subplots_adjust(hspace=1)
         return fig
@@ -209,7 +220,7 @@ class SeahorseExperiment:
 
         plt.xlabel("time [s]")
         plt.ylabel("temperature [°C]")
-        plt.title(self.project_name)
+        plt.title(self.title)
 
         plt.legend()
         return fig
@@ -249,7 +260,7 @@ class SeahorseExperiment:
                 figure_size=(12, 6),
                 text=p9.element_text(size=18),
             )
-            + p9.ggtitle(self.project_name)
+            + p9.ggtitle(self.title)
         )
 
         if replicates:
@@ -300,7 +311,7 @@ class SeahorseExperiment:
                 figure_size=(12, 6),
                 text=p9.element_text(size=18),
             )
-            + p9.ggtitle(self.project_name)
+            + p9.ggtitle(self.title)
         )
 
         if replicates:
@@ -357,7 +368,7 @@ class SeahorseExperiment:
                 figure_size=(12, 6),
                 text=p9.element_text(size=18),
             )
-            + p9.ggtitle(self.project_name)
+            + p9.ggtitle(self.title)
         )
 
         if replicates:
@@ -416,7 +427,7 @@ class SeahorseExperiment:
                 figure_size=(12, 6),
                 text=p9.element_text(size=18),
             )
-            + p9.ggtitle(self.project_name)
+            + p9.ggtitle(self.title)
         )
 
         if replicates:
