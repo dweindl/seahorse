@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seahorse"
+version = "0.0.0a0"
+authors = [
+    {name = "Daniel Weindl", email = "sci@danielweindl.de"},
+]
+description = "Parse Agilent Seahorse XF Analyzer data"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "BSD-3-Clause"}
+dependencies = [
+    "pandas>2.0",
+    "matplotlib>3.0",
+]
+
+[project.scripts]
+seahorse-vis = "seahorse.cli:vis_cli"
+
+[project.optional-dependencies]
+test = ["pytest", "pre-commit"]
+
+[tool.black]
+line-length = 80
+
+[tool.semantic_release]
+version_toml = "pyproject.toml:project.version"
