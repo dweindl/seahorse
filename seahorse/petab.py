@@ -47,7 +47,9 @@ def to_petab(
     else:
         df_ocr = df[["Time", "Group", "OCR_mean", "OCR_std"]][
             ~df.Group.isin(exclude_groups)
-        ].rename(columns={"OCR_mean": MEASUREMENT, "OCR_std": NOISE_PARAMETERS})
+        ].rename(
+            columns={"OCR_mean": MEASUREMENT, "OCR_std": NOISE_PARAMETERS}
+        )
         df_ocr[OBSERVABLE_ID] = ocr_observable_id
 
     if ecar_observable_id is None:

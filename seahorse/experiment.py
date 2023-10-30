@@ -3,7 +3,13 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .C import SHEET_CONFIGURATION, SHEET_LOG, SHEET_NORMALIZED_RATE, SHEET_RATE, SHEET_RAW
+from .C import (
+    SHEET_CONFIGURATION,
+    SHEET_LOG,
+    SHEET_NORMALIZED_RATE,
+    SHEET_RATE,
+    SHEET_RAW,
+)
 
 
 class SeahorseExperiment:
@@ -54,7 +60,9 @@ class SeahorseExperiment:
         assert "Measurement" in df_raw.columns.values[0]
         df_raw.columns.values[0] = "Measurement"
 
-        df_raw["datetime"] = pd.to_datetime(df_raw.TimeStamp, format="%H:%M:%S")
+        df_raw["datetime"] = pd.to_datetime(
+            df_raw.TimeStamp, format="%H:%M:%S"
+        )
         # TODO t0 is unclear here. It roughly (up to ~30s) corresponds to
         #  t_end_Equilibration - t_start_Home in the Operations Log
         t0 = df_raw["datetime"].min()
@@ -145,8 +153,8 @@ class SeahorseExperiment:
     def has_normalization(self):
         """Whether the experiment has normalized data."""
         return (
-                SHEET_NORMALIZED_RATE in self._df_all
-                and not self._df_all[SHEET_NORMALIZED_RATE].empty
+            SHEET_NORMALIZED_RATE in self._df_all
+            and not self._df_all[SHEET_NORMALIZED_RATE].empty
         )
 
     def small_multiples_rate(self) -> plt.Figure:
@@ -215,8 +223,12 @@ class SeahorseExperiment:
         ).reset_index()
 
         fig = plt.figure()
-        plt.plot(df["time_s"], df["Well Temperature"], label="Well Temperature")
-        plt.plot(df["time_s"], df["Env. Temperature"], label="Env. Temperature")
+        plt.plot(
+            df["time_s"], df["Well Temperature"], label="Well Temperature"
+        )
+        plt.plot(
+            df["time_s"], df["Env. Temperature"], label="Env. Temperature"
+        )
 
         plt.xlabel("time [s]")
         plt.ylabel("temperature [°C]")
@@ -225,7 +237,9 @@ class SeahorseExperiment:
         plt.legend()
         return fig
 
-    def plot_summary_ocr(self, normalized=False, replicates=True) -> plt.Figure:
+    def plot_summary_ocr(
+        self, normalized=False, replicates=True
+    ) -> plt.Figure:
         """Plot experiment summary.
 
         Plots the mean and standard deviation of the OCR for each timepoint.
@@ -316,7 +330,9 @@ class SeahorseExperiment:
 
         if replicates:
             gg += p9.geom_line(
-                p9.aes(x="Time", y="ECAR", group="Well", color="factor(Group)"),
+                p9.aes(
+                    x="Time", y="ECAR", group="Well", color="factor(Group)"
+                ),
                 alpha=0.3,
                 data=df,
             )
