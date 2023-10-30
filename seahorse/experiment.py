@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .C import CONFIGURATION, LOG, NORMALIZED_RATE, RATE, RAW
+from .C import SHEET_CONFIGURATION, SHEET_LOG, SHEET_NORMALIZED_RATE, SHEET_RATE, SHEET_RAW
 
 
 class SeahorseExperiment:
@@ -104,7 +104,7 @@ class SeahorseExperiment:
 
         To be extended.
         """
-        df = self._df_all[CONFIGURATION]
+        df = self._df_all[SHEET_CONFIGURATION]
         # TODO to proper data types
         config = {t[1]: t[2] for t in df.itertuples() if not pd.isna(t[1])}
         config = {k.removesuffix(":").strip(): v for k, v in config.items()}
@@ -112,19 +112,19 @@ class SeahorseExperiment:
 
     @property
     def log(self):
-        return self._df_all[LOG]
+        return self._df_all[SHEET_LOG]
 
     @property
     def rate(self):
-        return self._df_all[RATE]
+        return self._df_all[SHEET_RATE]
 
     @property
     def normalized_rate(self):
-        return self._df_all[NORMALIZED_RATE]
+        return self._df_all[SHEET_NORMALIZED_RATE]
 
     @property
     def raw(self):
-        return self._df_all[RAW]
+        return self._df_all[SHEET_RAW]
 
     @property
     def project_name(self) -> str:
@@ -145,8 +145,8 @@ class SeahorseExperiment:
     def has_normalization(self):
         """Whether the experiment has normalized data."""
         return (
-            NORMALIZED_RATE in self._df_all
-            and not self._df_all[NORMALIZED_RATE].empty
+                SHEET_NORMALIZED_RATE in self._df_all
+                and not self._df_all[SHEET_NORMALIZED_RATE].empty
         )
 
     def small_multiples_rate(self) -> plt.Figure:

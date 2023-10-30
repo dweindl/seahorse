@@ -24,7 +24,7 @@ seahorse-vis = "seahorse.cli:vis_cli"
 test = ["pytest", "pre-commit"]
 
 [tool.black]
-line-length = 80
+line-length = 79
 
 [tool.semantic_release]
 version_toml = "pyproject.toml:project.version"
