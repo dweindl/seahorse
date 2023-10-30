@@ -80,7 +80,7 @@ class SeahorseExperiment:
         assert time_unit in ["s", "min"]
         time_conv = 1 / 60 if time_unit == "min" else 1
         df_log = self.log
-        injections = df_log[df_log["Command Name"] == "Inject"]
+        injections = self.injections
 
         if ax is None:
             ax = plt.gca()
@@ -156,6 +156,11 @@ class SeahorseExperiment:
             SHEET_NORMALIZED_RATE in self._df_all
             and not self._df_all[SHEET_NORMALIZED_RATE].empty
         )
+
+    @property
+    def injections(self):
+        df_log = self.log
+        return df_log[df_log["Command Name"] == "Inject"]
 
     def small_multiples_rate(self) -> plt.Figure:
         """Plot small multiples of all measurements"""
