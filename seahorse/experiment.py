@@ -166,6 +166,10 @@ class SeahorseExperiment:
         df_log = self.log
         return df_log[df_log["Command Name"] == "Inject"]
 
+    @property
+    def groups(self):
+        return self._df_all[SHEET_RAW]["Group"].unique().tolist()
+
     def small_multiples_rate(self) -> plt.Figure:
         """Plot small multiples of all measurements"""
         # assumes 96 well plates
