@@ -75,6 +75,7 @@ class SeahorseExperiment:
         ax: plt.Axes = None,
         label_axes=False,
         fontsize=18,
+        staggered=True,
     ) -> plt.Figure:
         """Plot injection time span and label the perturbations."""
         assert time_unit in ["s", "min"]
@@ -85,14 +86,17 @@ class SeahorseExperiment:
         if ax is None:
             ax = plt.gca()
 
-        for _, row in injections.iterrows():
+        for i, (_, row) in enumerate(injections.iterrows()):
             ax.axvspan(
                 row["start_s"] * time_conv, row["end_s"] * time_conv, color="r"
             )
             ax.annotate(
                 text=row["Instruction Name"],
                 xy=(row["start_s"] * time_conv, ax.get_ylim()[1]),
-                xytext=(0.1 * fontsize, -fontsize),
+                xytext=(
+                    0.1 * fontsize,
+                    -(i + 1) * fontsize if staggered else -fontsize,
+                ),
                 textcoords="offset points",
                 color="r",
                 fontsize=fontsize,
