@@ -495,31 +495,40 @@ class SeahorseExperiment:
 
         fig = self.plot_summary_ph()
         fig.savefig(dirpath / f"{prefix}summary_ph{suffix}")
+        plt.close(fig)
 
         fig = self.plot_summary_o2()
         fig.savefig(dirpath / f"{prefix}summary_o2{suffix}")
+        plt.close(fig)
 
         fig = self.plot_summary_ocr(normalized=False)
         fig.savefig(dirpath / f"{prefix}summary_ocr{suffix}")
+        plt.close(fig)
 
         fig = self.plot_summary_ecar(normalized=False)
         fig.savefig(dirpath / f"{prefix}summary_ecar{suffix}")
+        plt.close(fig)
 
         if self.has_normalization:
             fig = self.plot_summary_ecar(normalized=True)
             fig.savefig(dirpath / f"{prefix}summary_ecar_normalized{suffix}")
+            plt.close(fig)
 
             fig = self.plot_summary_ocr(normalized=True)
             fig.savefig(dirpath / f"{prefix}summary_ocr_normalized{suffix}")
+            plt.close(fig)
 
         self.small_multiples_rate()
         plt.savefig(dirpath / f"{prefix}small_multiples_rate{suffix}")
+        plt.close(fig)
 
         self.small_multiples_raw()
         plt.savefig(dirpath / f"{prefix}small_multiples_raw{suffix}")
+        plt.close(fig)
 
         self.plot_temperature()
         plt.savefig(dirpath / f"{prefix}temperature{suffix}")
+        plt.close(fig)
 
     def aggregated_rates(self, normalized=False) -> pd.DataFrame:
         """Aggregate normalized OCR + ECAR data.
