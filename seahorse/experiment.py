@@ -251,7 +251,7 @@ class SeahorseExperiment:
         return fig
 
     def plot_summary_ocr(
-        self, normalized=False, replicates=True
+        self, normalized=False, replicates=True, means=True, errorbars=True
     ) -> plt.Figure:
         """Plot experiment summary.
 
@@ -268,13 +268,9 @@ class SeahorseExperiment:
         gg = (
             p9.ggplot(df_grouped)
             + p9.aes("Time", "mean", color="factor(Group)")
-            + p9.geom_line(size=2)
             + p9.scale_x_continuous(name="time [min]")
             + p9.scale_y_continuous(
                 name=f"{'normalized ' if normalized else ''}OCR [pmol/min]"
-            )
-            + p9.geom_errorbar(
-                p9.aes(ymin="mean-std", ymax="mean+std"), width=2, size=1
             )
             + p9.labs(colour="")
             + p9.theme_light()
@@ -289,6 +285,13 @@ class SeahorseExperiment:
             )
             + p9.ggtitle(self.title)
         )
+        if means:
+            gg += p9.geom_line(size=2)
+
+        if errorbars:
+            gg += p9.geom_errorbar(
+                p9.aes(ymin="mean-std", ymax="mean+std"), width=2, size=1
+            )
 
         if replicates:
             gg += p9.geom_line(
@@ -302,7 +305,7 @@ class SeahorseExperiment:
         return fig
 
     def plot_summary_ecar(
-        self, normalized=False, replicates=True
+        self, normalized=False, replicates=True, means=True, errorbars=True
     ) -> plt.Figure:
         """Plot experiment summary.
 
@@ -319,13 +322,9 @@ class SeahorseExperiment:
         gg = (
             p9.ggplot(df_grouped)
             + p9.aes("Time", "mean", color="factor(Group)")
-            + p9.geom_line(size=2)
             + p9.scale_x_continuous(name="time [min]")
             + p9.scale_y_continuous(
                 name=f"{'normalized ' if normalized else ''}ECAR [mpH/min]"
-            )
-            + p9.geom_errorbar(
-                p9.aes(ymin="mean-std", ymax="mean+std"), width=2, size=1
             )
             + p9.labs(colour="")
             + p9.theme_light()
@@ -340,6 +339,13 @@ class SeahorseExperiment:
             )
             + p9.ggtitle(self.title)
         )
+        if means:
+            gg += p9.geom_line(size=2)
+
+        if errorbars:
+            gg += p9.geom_errorbar(
+                p9.aes(ymin="mean-std", ymax="mean+std"), width=2, size=1
+            )
 
         if replicates:
             gg += p9.geom_line(
