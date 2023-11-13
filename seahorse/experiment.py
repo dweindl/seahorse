@@ -25,8 +25,23 @@ class SeahorseExperiment:
             for f in file.glob("*.tsv"):
                 self._df_all[f.stem] = pd.read_csv(f, sep="\t")
         else:
-            self._df_all = pd.read_excel(file, sheet_name=None)
+            from importlib.metadata import version
 
+            from pandas.io.excel._base import inspect_excel_format
+
+            # because openpyxl doesn't some files properly with read_only=True
+            # (requires https://github.com/pandas-dev/pandas/pull/55807 - remove once pandas 2.2.0 is released)
+            if inspect_excel_format(file) == "xlsx" and tuple(
+                map(int, version("pandas").split(".")[:3])
+            ) >= (2, 2, 0):
+                self._df_all = pd.read_excel(
+                    file,
+                    sheet_name=None,
+                    engine="openpyxl",
+                    engine_kwargs={"read_only": False},
+                )
+            else:
+                self._df_all = pd.read_excel(file, sheet_name=None)
         self._preprocess_operation_log()
         self._preprocess_raw()
         self._title = title
