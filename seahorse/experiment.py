@@ -10,6 +10,7 @@ from .C import (
     SHEET_RATE,
     SHEET_RAW,
 )
+from .multi_well import MultiWellPlate
 
 
 class SeahorseExperiment:
@@ -45,6 +46,28 @@ class SeahorseExperiment:
         self._preprocess_operation_log()
         self._preprocess_raw()
         self._title = title
+        self._excluded_wells: set[str] = set()
+
+    def exclude_wells(self, wells: str):
+        """Add a well to the exclusion list.
+
+        E.g. for removing/labeling outliers.
+
+        :param well: Well label, e.g. "A1", or range of wells, e.g. "A1:A12", or comma-separated list of those.
+        """
+        mwp = MultiWellPlate(nwells=96)
+
+        for well_or_range in wells.split(","):
+            if ":" in well_or_range:
+                # range of wells
+                for well in mwp.expand_range(well_or_range):
+                    self._excluded_wells.add(well)
+            else:
+                # single well
+                assert mwp.is_valid_well(
+                    well_or_range
+                ), f"Invalid well: {well_or_range}"
+                self._excluded_wells.add(well_or_range)
 
     def _preprocess_operation_log(self):
         """Preprocess OperationLog sheet"""
@@ -200,15 +223,23 @@ class SeahorseExperiment:
             mosaic, sharex=True, sharey=True, figsize=(18, 10)
         )
         fig.suptitle(self.title)
+        mwp = MultiWellPlate(nwells=96)
         for (group,), group_df in self.rate.groupby(["Well"]):
+            alpha = (
+                0.2
+                if mwp.remove_leading_zeroes(group) in self._excluded_wells
+                else 1
+            )
             ax = axs[group]
             ax.set_title(group_df.Group.values[0])
             _no_axes(ax)
-            ax.plot(group_df["Time"], group_df["OCR"], color="b")
+            ax.plot(group_df["Time"], group_df["OCR"], color="b", alpha=alpha)
             # separate axis for ECAR
             ax2 = ax.twinx()
             _no_axes(ax2)
-            ax2.plot(group_df["Time"], group_df["ECAR"], color="r")
+            ax2.plot(
+                group_df["Time"], group_df["ECAR"], color="r", alpha=alpha
+            )
             # TODO perturbations
         # TODO label rows and columns https://stackoverflow.com/questions/25812255/row-and-column-headers-in-matplotlibs-subplots
         # TODO plot all trajectories with low alpha as background,
@@ -565,6 +596,7 @@ class SeahorseExperiment:
         For now, report mean+sd.
         """
         df = self.normalized_rate if normalized else self.rate
+        df = df.loc[~df["Well"].isin(self._excluded_wells), :]
         df = df.groupby(["Measurement", "Time", "Group"]).agg(
             count=("Measurement", "count"),
             OCR_mean=("OCR", "mean"),
