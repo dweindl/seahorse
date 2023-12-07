@@ -381,13 +381,15 @@ class SeahorseExperiment:
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
         return fig
 
-    def plot_summary_ph(self, replicates=True) -> plt.Figure:
+    def plot_summary_ph(self, replicates=True, groups=None) -> plt.Figure:
         """Plot experiment summary.
 
         Plots the mean and standard deviation of the pH for each timepoint.
         """
         df = self.raw
-        df["time_min"] = df.time_s / 60
+        if groups:
+            df = df.loc[df["Group"].isin(groups), :]
+        df.loc[:, "time_min"] = df.time_s / 60
         df_grouped = (
             df.groupby(["Measurement", "time_min", "Group"])
             .agg(
