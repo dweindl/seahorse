@@ -89,10 +89,14 @@ class SeahorseExperiment:
         show=False,
         ax: plt.Axes = None,
         label_axes=False,
-        fontsize=18,
+        fontsize=None,
         staggered=True,
+        color="grey",
     ) -> plt.Figure:
         """Plot injection time span and label the perturbations."""
+        if fontsize is None:
+            fontsize = plt.rcParams["font.size"]
+
         assert time_unit in ["s", "min"]
         time_conv = 1 / 60 if time_unit == "min" else 1
         df_log = self.log
@@ -103,17 +107,19 @@ class SeahorseExperiment:
 
         for i, (_, row) in enumerate(injections.iterrows()):
             ax.axvspan(
-                row["start_s"] * time_conv, row["end_s"] * time_conv, color="r"
+                row["start_s"] * time_conv,
+                row["end_s"] * time_conv,
+                color=color,
             )
             ax.annotate(
                 text=row["Instruction Name"],
                 xy=(row["start_s"] * time_conv, ax.get_ylim()[1]),
                 xytext=(
-                    0.1 * fontsize,
+                    0.5 * fontsize,
                     -(i + 1) * fontsize if staggered else -fontsize,
                 ),
                 textcoords="offset points",
-                color="r",
+                color=color,
                 fontsize=fontsize,
             )
         if label_axes:
