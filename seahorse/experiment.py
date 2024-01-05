@@ -203,14 +203,21 @@ class SeahorseExperiment:
     def groups(self):
         return self._df_all[SHEET_RAW]["Group"].unique().tolist()
 
-    def small_multiples_rate(self) -> plt.Figure:
+    def small_multiples_rate(self, *, fig: plt.Figure = None) -> plt.Figure:
         """Plot small multiples of all measurements"""
         # assumes 96 well plates
         assert 96 == len(self.rate["Well"].unique())
         mosaic = multi_well_mosaic_96()
-        fig, axs = plt.subplot_mosaic(
-            mosaic, sharex=True, sharey=True, figsize=(18, 10)
-        )
+        if fig:
+            axs = fig.subplot_mosaic(
+                mosaic,
+                sharex=True,
+                sharey=True,
+            )
+        else:
+            fig, axs = plt.subplot_mosaic(
+                mosaic, sharex=True, sharey=True, figsize=(18, 10)
+            )
         fig.suptitle(self.title)
         for (group,), group_df in self.rate.groupby(["Well"]):
             alpha = (
