@@ -10,6 +10,7 @@ def test_mwp():
 def test_split_well():
     mwp = MultiWellPlate(nwells=96)
     assert mwp.split_well("A1") == ("A", 1)
+    assert mwp.split_well("A01") == ("A", 1)
     assert mwp.split_well("H12") == ("H", 12)
 
 

@@ -36,24 +36,24 @@ class SeahorseExperiment:
         self._preprocess_raw()
         self._title = title
         self._excluded_wells: set[str] = set()
+        self._mwp = MultiWellPlate(nwells=96)
 
     def exclude_wells(self, wells: str):
         """Add a well to the exclusion list.
 
-        E.g. for removing/labeling outliers.
+        E.g., for removing/labeling outliers.
 
-        :param well: Well label, e.g. "A1", or range of wells, e.g. "A1:A12", or comma-separated list of those.
+        :param wells: Well label, e.g. "A1", or range of wells, e.g. "A1:A12",
+            or comma-separated list of those.
         """
-        mwp = MultiWellPlate(nwells=96)
-
         for well_or_range in wells.split(","):
             if ":" in well_or_range:
                 # range of wells
-                for well in mwp.expand_range(well_or_range):
+                for well in self._mwp.expand_range(well_or_range):
                     self._excluded_wells.add(well)
             else:
                 # single well
-                assert mwp.is_valid_well(
+                assert self._mwp.is_valid_well(
                     well_or_range
                 ), f"Invalid well: {well_or_range}"
                 self._excluded_wells.add(well_or_range)
@@ -212,11 +212,11 @@ class SeahorseExperiment:
             mosaic, sharex=True, sharey=True, figsize=(18, 10)
         )
         fig.suptitle(self.title)
-        mwp = MultiWellPlate(nwells=96)
         for (group,), group_df in self.rate.groupby(["Well"]):
             alpha = (
                 0.2
-                if mwp.remove_leading_zeroes(group) in self._excluded_wells
+                if self._mwp.remove_leading_zeroes(group)
+                in self._excluded_wells
                 else 1
             )
             ax = axs[group]
