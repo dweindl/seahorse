@@ -345,7 +345,20 @@ class SeahorseExperiment:
             gg += p9.geom_line(
                 p9.aes(x="Time", y="OCR", group="Well", color="factor(Group)"),
                 alpha=0.3,
-                data=df,
+                data=df[
+                    ~df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
+            )
+            gg += p9.geom_line(
+                p9.aes(x="Time", y="OCR", group="Well", color="factor(Group)"),
+                alpha=0.1,
+                data=df[
+                    df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
             )
 
         fig = gg.draw()
@@ -401,7 +414,22 @@ class SeahorseExperiment:
                     x="Time", y="ECAR", group="Well", color="factor(Group)"
                 ),
                 alpha=0.3,
-                data=df,
+                data=df[
+                    ~df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
+            )
+            gg += p9.geom_line(
+                p9.aes(
+                    x="Time", y="ECAR", group="Well", color="factor(Group)"
+                ),
+                alpha=0.1,
+                data=df[
+                    df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
             )
 
         fig = gg.draw()
@@ -462,7 +490,26 @@ class SeahorseExperiment:
                     x="time_min", y="pH", group="Well", color="factor(Group)"
                 ),
                 alpha=0.3,
-                data=df,
+                data=df[
+                    ~df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
+            )
+            gg += p9.geom_line(
+                p9.aes(
+                    x="time_min",
+                    y="pH",
+                    group="Well",
+                    color="factor(Group)",
+                ),
+                # TODO dashed?
+                alpha=0.1,
+                data=df[
+                    df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
             )
 
         fig = gg.draw()
@@ -524,7 +571,25 @@ class SeahorseExperiment:
                     color="factor(Group)",
                 ),
                 alpha=0.3,
-                data=df,
+                data=df[
+                    ~df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
+            )
+            gg += p9.geom_line(
+                p9.aes(
+                    x="time_min",
+                    y="O2 (mmHg)",
+                    group="Well",
+                    color="factor(Group)",
+                ),
+                alpha=0.1,
+                data=df[
+                    df.Well.apply(self._mwp.remove_leading_zeroes).isin(
+                        self._excluded_wells
+                    )
+                ],
             )
 
         fig = gg.draw()
