@@ -59,7 +59,18 @@ class SeahorseExperiment:
                 self._excluded_wells.add(well_or_range)
 
     def _preprocess_operation_log(self):
-        """Preprocess OperationLog sheet"""
+        """Preprocess OperationLog sheet
+
+        Add columns with relative timestamps, and duration of each operation.
+
+        `Operation Log` has absolute timestamps, but `Raw` and `Rate*` have
+        (different) relative timestamps.
+        So, hat is to be considered t=0 in each sheet?
+
+        For `Raw`, t=0 seems to be the end of `LoadProbes` (or the beginning of
+        `Initialization`). For `Rate*`, t=0 seems to be the end of
+        `Equilibrate`.
+        """
         df_log = self.log
 
         # pd.to_datetime sometimes raises:
@@ -70,8 +81,7 @@ class SeahorseExperiment:
         df_log["start_dt"] = pd.to_datetime(df_log["Start Time"])
         df_log["end_dt"] = pd.to_datetime(df_log["End Time"])
 
-        # TODO what is to be considered t=0? end of equilibration for now
-        #  6s--18s off from measurement times
+        # t = 0: see docstring
         t0 = df_log["end_dt"][
             df_log["Instruction Name"] == "Equilibrate"
         ].values[0]
@@ -90,9 +100,11 @@ class SeahorseExperiment:
         df_raw["datetime"] = pd.to_datetime(
             df_raw.TimeStamp, format="%H:%M:%S"
         )
-        # TODO t0 is unclear here. It roughly (up to ~30s) corresponds to
-        #  t_end_Equilibration - t_start_Home in the Operations Log
-        t0 = df_raw["datetime"].min()
+
+        # t = 0: see docstring of `_preprocess_operation_log`
+        t0 = self.log["end_dt"][
+            self.log["Instruction Name"] == "Equilibrate"
+        ].values[0]
         df_raw["time_s"] = (df_raw["datetime"] - t0).dt.total_seconds()
 
     def plot_perturbations(
