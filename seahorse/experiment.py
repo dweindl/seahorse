@@ -97,11 +97,15 @@ class SeahorseExperiment:
         assert "Measurement" in df_raw.columns.values[0]
         df_raw.columns.values[0] = "Measurement"
 
-        df_raw["datetime"] = pd.to_datetime(
-            df_raw.TimeStamp, format="%H:%M:%S"
-        )
-
         # t = 0: see docstring of `_preprocess_operation_log`
+        t0 = self.log["end_dt"][
+            self.log["Instruction Name"] == "Load Cartridge"
+        ].values[0]
+        # this is the Seahorse Timestamp, relative to ...?
+        df_raw.TimeStamp = pd.to_timedelta(df_raw.TimeStamp)
+        df_raw["datetime"] = t0 + df_raw.TimeStamp
+
+        # we want a different time offset
         t0 = self.log["end_dt"][
             self.log["Instruction Name"] == "Equilibrate"
         ].values[0]
