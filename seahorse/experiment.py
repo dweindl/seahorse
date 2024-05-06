@@ -650,18 +650,11 @@ class SeahorseExperiment:
         plt.close(fig)
 
         if self.has_normalization:
-            fig = self.plot_summary_ecar(normalized=True)
-            fig.savefig(dirpath / f"{prefix}summary_ecar_normalized{suffix}")
-            plt.close(fig)
-
-            fig = self.plot_summary_ocr(normalized=True)
-            fig.savefig(dirpath / f"{prefix}summary_ocr_normalized{suffix}")
-            plt.close(fig)
-
             df_wide = self.normalization(long=False)
             sns.heatmap(df_wide)
             plt.savefig(dirpath / "normalization_heatmap.png")
             plt.close()
+
             df_long = self.normalization(long=True)
 
             # add "Group" from Rate tab
@@ -681,17 +674,25 @@ class SeahorseExperiment:
             plt.savefig(dirpath / "normalization_barplot.png")
             plt.close()
 
+            fig = self.plot_summary_ecar(normalized=True)
+            fig.savefig(dirpath / f"{prefix}summary_ecar_normalized{suffix}")
+            plt.close(fig)
+
+            fig = self.plot_summary_ocr(normalized=True)
+            fig.savefig(dirpath / f"{prefix}summary_ocr_normalized{suffix}")
+            plt.close(fig)
+
         self.small_multiples_rate()
         plt.savefig(dirpath / f"{prefix}small_multiples_rate{suffix}")
-        plt.close(fig)
+        plt.close()
 
         self.small_multiples_raw()
         plt.savefig(dirpath / f"{prefix}small_multiples_raw{suffix}")
-        plt.close(fig)
+        plt.close()
 
         self.plot_temperature()
         plt.savefig(dirpath / f"{prefix}temperature{suffix}")
-        plt.close(fig)
+        plt.close()
 
     def aggregated_rates(self, normalized=False) -> pd.DataFrame:
         """Aggregate normalized OCR + ECAR data.
