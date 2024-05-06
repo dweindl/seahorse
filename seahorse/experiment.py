@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 from .C import (
@@ -682,6 +683,48 @@ class SeahorseExperiment:
             ECAR_std=("ECAR", "std"),
         )
         return df.reset_index()
+
+    def normalization(self, long: bool = True) -> pd.DataFrame:
+        """Get normalization values.
+
+        :param long: Whether to return the DataFrame in long format.
+        """
+        df = self._df_all[SHEET_CONFIGURATION]
+
+        # Find the normalization values
+        normalization_start = np.where(
+            df.iloc[:, 0] == "Normalization Settings"
+        )[0][0]
+        normalization_end = np.where(
+            df.iloc[:, 0] == "Buffer Factor Settings"
+        )[0][0]
+        df = df.iloc[normalization_start:normalization_end, :]
+        assert "".join(df.iloc[4:12, 1]) == "ABCDEFGH"
+        assert pd.isna(df.iloc[12, 1])
+        normalization_values = df.iloc[4:12, 2:14].astype(float)
+
+        # proper column and row names
+        mwp = MultiWellPlate(nwells=96)
+        normalization_values.columns = list(mwp.iter_cols())
+        normalization_values.index = list(mwp.iter_rows())
+
+        if long is False:
+            return normalization_values
+
+        def to_long(df):
+            df = df.copy()
+            df = df.reset_index()
+            df = df.melt(id_vars=["index"])
+            df.columns = ["row", "col", "value"]
+            # 0-padding for single digit numbers to match other sheets
+            df.col = df.col.astype(str).str.zfill(2)
+            df.insert(
+                loc=0, column="well", value=df["row"] + df["col"].astype(str)
+            )
+            df = df.drop(columns=["row", "col"])
+            return df
+
+        return to_long(normalization_values)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}({self.config('Project Name')})>"
