@@ -628,6 +628,8 @@ class SeahorseExperiment:
             Suffix to append to each filename, including the file extension.
             Allows choosing a different file format, e.g. ".svg".
         """
+        import seaborn as sns
+
         dirpath = Path(dirpath)
         dirpath.mkdir(parents=True, exist_ok=True)
 
@@ -655,6 +657,29 @@ class SeahorseExperiment:
             fig = self.plot_summary_ocr(normalized=True)
             fig.savefig(dirpath / f"{prefix}summary_ocr_normalized{suffix}")
             plt.close(fig)
+
+            df_wide = self.normalization(long=False)
+            sns.heatmap(df_wide)
+            plt.savefig(dirpath / "normalization_heatmap.png")
+            plt.close()
+            df_long = self.normalization(long=True)
+
+            # add "Group" from Rate tab
+            df_rate = self._df_all[SHEET_RATE]
+            df_rate = df_rate[df_rate.Measurement == 1]
+            # match well to group
+            df_rate = df_rate.set_index("Well")
+            df_long["group"] = df_long["well"].map(df_rate["Group"])
+
+            sns.barplot(df_long, x="group", y="value", errorbar=None)
+            ax = sns.stripplot(df_long, x="group", y="value", color="black")
+            ax.set_ylim(bottom=0)
+            ax.tick_params(axis="x", labelrotation=45)
+            ax.set_title("Normalization values")
+            ax.set_ylabel("Normalization value")
+            plt.tight_layout()
+            plt.savefig(dirpath / "normalization_barplot.png")
+            plt.close()
 
         self.small_multiples_rate()
         plt.savefig(dirpath / f"{prefix}small_multiples_rate{suffix}")
