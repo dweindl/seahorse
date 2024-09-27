@@ -9,3 +9,5 @@ This is an unofficial Python package for handling data from [Agilent Seahorse XF
 ```bash
 pip install . # or `pip install -e .` for development installation
 ```
+
+The `seahorse` package on PyPI is **not** this package.
