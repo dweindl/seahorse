@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .C import *
-from .experiment import SeahorseExperiment
+from .C import *  # noqa 403
+from .experiment import SeahorseExperiment as SeahorseExperiment
 
 
 def spreadsheet_to_tsv(file: Path | str, outdir: Path | str):

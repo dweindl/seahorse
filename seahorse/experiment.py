@@ -55,9 +55,9 @@ class SeahorseExperiment:
                     self._excluded_wells.add(well)
             else:
                 # single well
-                assert self._mwp.is_valid_well(
-                    well_or_range
-                ), f"Invalid well: {well_or_range}"
+                assert self._mwp.is_valid_well(well_or_range), (
+                    f"Invalid well: {well_or_range}"
+                )
                 self._excluded_wells.add(well_or_range)
 
     def _preprocess_operation_log(self):
@@ -78,9 +78,7 @@ class SeahorseExperiment:
         df_log["end_dt"] = df_log["End Time"].apply(dateutil.parser.parse)
 
         # t = 0: see docstring
-        t0 = df_log["end_dt"][
-            df_log["Instruction Name"] == "Equilibrate"
-        ].values[0]
+        t0 = df_log["end_dt"][df_log["Instruction Name"] == "Equilibrate"].values[0]
 
         df_log["start_s"] = (df_log["start_dt"] - t0).dt.total_seconds()
         df_log["end_s"] = (df_log["end_dt"] - t0).dt.total_seconds()
@@ -102,9 +100,7 @@ class SeahorseExperiment:
         df_raw["datetime"] = t0 + df_raw.TimeStamp
 
         # we want a different time offset
-        t0 = self.log["end_dt"][
-            self.log["Instruction Name"] == "Equilibrate"
-        ].values[0]
+        t0 = self.log["end_dt"][self.log["Instruction Name"] == "Equilibrate"].values[0]
         df_raw["time_s"] = (df_raw["datetime"] - t0).dt.total_seconds()
 
     def plot_perturbations(
@@ -234,8 +230,7 @@ class SeahorseExperiment:
         for (group,), group_df in self.rate.groupby(["Well"]):
             alpha = (
                 0.2
-                if self._mwp.remove_leading_zeroes(group)
-                in self._excluded_wells
+                if self._mwp.remove_leading_zeroes(group) in self._excluded_wells
                 else 1
             )
             ax = axs[group]
@@ -245,9 +240,7 @@ class SeahorseExperiment:
             # separate axis for ECAR
             ax2 = ax.twinx()
             _no_axes(ax2)
-            ax2.plot(
-                group_df["Time"], group_df["ECAR"], color="r", alpha=alpha
-            )
+            ax2.plot(group_df["Time"], group_df["ECAR"], color="r", alpha=alpha)
             # TODO perturbations
         # TODO label rows and columns https://stackoverflow.com/questions/25812255/row-and-column-headers-in-matplotlibs-subplots
         # TODO plot all trajectories with low alpha as background,
@@ -296,12 +289,8 @@ class SeahorseExperiment:
         ).reset_index()
 
         fig = plt.figure()
-        plt.plot(
-            df["time_s"], df["Well Temperature"], label="Well Temperature"
-        )
-        plt.plot(
-            df["time_s"], df["Env. Temperature"], label="Env. Temperature"
-        )
+        plt.plot(df["time_s"], df["Well Temperature"], label="Well Temperature")
+        plt.plot(df["time_s"], df["Env. Temperature"], label="Env. Temperature")
 
         plt.xlabel("time [s]")
         plt.ylabel("temperature [°C]")
@@ -422,9 +411,7 @@ class SeahorseExperiment:
 
         if replicates:
             gg += p9.geom_line(
-                p9.aes(
-                    x="Time", y="ECAR", group="Well", color="factor(Group)"
-                ),
+                p9.aes(x="Time", y="ECAR", group="Well", color="factor(Group)"),
                 alpha=0.3,
                 data=df[
                     ~df.Well.apply(self._mwp.remove_leading_zeroes).isin(
@@ -433,9 +420,7 @@ class SeahorseExperiment:
                 ],
             )
             gg += p9.geom_line(
-                p9.aes(
-                    x="Time", y="ECAR", group="Well", color="factor(Group)"
-                ),
+                p9.aes(x="Time", y="ECAR", group="Well", color="factor(Group)"),
                 alpha=0.1,
                 data=df[
                     df.Well.apply(self._mwp.remove_leading_zeroes).isin(
@@ -498,9 +483,7 @@ class SeahorseExperiment:
 
         if replicates:
             gg += p9.geom_line(
-                p9.aes(
-                    x="time_min", y="pH", group="Well", color="factor(Group)"
-                ),
+                p9.aes(x="time_min", y="pH", group="Well", color="factor(Group)"),
                 alpha=0.3,
                 data=df[
                     ~df.Well.apply(self._mwp.remove_leading_zeroes).isin(
@@ -608,9 +591,7 @@ class SeahorseExperiment:
         self.plot_perturbations(ax=fig.axes[0], time_unit="min")
         return fig
 
-    def plot_to_dir(
-        self, dirpath: str | Path, prefix: str = "", suffix: str = ".png"
-    ):
+    def plot_to_dir(self, dirpath: str | Path, prefix: str = "", suffix: str = ".png"):
         """Save plots to directory.
 
         Parameters
@@ -713,12 +694,8 @@ class SeahorseExperiment:
         df = self._df_all[SHEET_CONFIGURATION]
 
         # Find the normalization values
-        normalization_start = np.where(
-            df.iloc[:, 0] == "Normalization Settings"
-        )[0][0]
-        normalization_end = np.where(
-            df.iloc[:, 0] == "Buffer Factor Settings"
-        )[0][0]
+        normalization_start = np.where(df.iloc[:, 0] == "Normalization Settings")[0][0]
+        normalization_end = np.where(df.iloc[:, 0] == "Buffer Factor Settings")[0][0]
         df = df.iloc[normalization_start:normalization_end, :]
         assert "".join(df.iloc[4:12, 1]) == "ABCDEFGH"
         assert pd.isna(df.iloc[12, 1])
@@ -739,9 +716,7 @@ class SeahorseExperiment:
             df.columns = ["row", "col", "value"]
             # 0-padding for single digit numbers to match other sheets
             df.col = df.col.astype(str).str.zfill(2)
-            df.insert(
-                loc=0, column="well", value=df["row"] + df["col"].astype(str)
-            )
+            df.insert(loc=0, column="well", value=df["row"] + df["col"].astype(str))
             df = df.drop(columns=["row", "col"])
             return df
 

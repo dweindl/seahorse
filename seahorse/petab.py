@@ -2,6 +2,7 @@
 
 https://petab.readthedocs.io/
 """
+
 import pandas as pd
 
 
@@ -47,9 +48,7 @@ def to_petab(
     else:
         df_ocr = df[["Time", "Group", "OCR_mean", "OCR_std"]][
             ~df.Group.isin(exclude_groups)
-        ].rename(
-            columns={"OCR_mean": MEASUREMENT, "OCR_std": NOISE_PARAMETERS}
-        )
+        ].rename(columns={"OCR_mean": MEASUREMENT, "OCR_std": NOISE_PARAMETERS})
         df_ocr[OBSERVABLE_ID] = ocr_observable_id
 
     if ecar_observable_id is None:
@@ -57,15 +56,11 @@ def to_petab(
     else:
         df_ecar = df[["Time", "Group", "ECAR_mean", "ECAR_std"]][
             ~df.Group.isin(exclude_groups)
-        ].rename(
-            columns={"ECAR_mean": MEASUREMENT, "ECAR_std": NOISE_PARAMETERS}
-        )
+        ].rename(columns={"ECAR_mean": MEASUREMENT, "ECAR_std": NOISE_PARAMETERS})
         df_ecar[OBSERVABLE_ID] = ecar_observable_id
 
     df_petab = pd.concat([df_ocr, df_ecar])
-    df_petab = df_petab.rename(
-        columns={"Time": TIME, "Group": SIMULATION_CONDITION_ID}
-    )
+    df_petab = df_petab.rename(columns={"Time": TIME, "Group": SIMULATION_CONDITION_ID})
     # reorder columns for readability
     df_petab = df_petab[
         [

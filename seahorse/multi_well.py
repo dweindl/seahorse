@@ -17,9 +17,7 @@ class MultiWellPlate:
         1536: (32, 48),
     }
 
-    def __init__(
-        self, nrows: int = None, ncols: int = None, nwells: int = None
-    ):
+    def __init__(self, nrows: int = None, ncols: int = None, nwells: int = None):
         """Create a multi-well plate."""
         if nwells is not None:
             if nrows is not None or ncols is not None:
@@ -57,8 +55,7 @@ class MultiWellPlate:
         row_start, col_start = self.split_well(start_well)
         row_end, col_end = self.split_well(end_well)
         for row in ascii_uppercase[
-            ascii_uppercase.index(row_start) : ascii_uppercase.index(row_end)
-            + 1
+            ascii_uppercase.index(row_start) : ascii_uppercase.index(row_end) + 1
         ]:
             for col in range(col_start, col_end + 1):
                 yield f"{row}{col}"
