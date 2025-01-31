@@ -58,7 +58,7 @@ class SeahorseExperiment:
                 assert self._mwp.is_valid_well(well_or_range), (
                     f"Invalid well: {well_or_range}"
                 )
-                self._excluded_wells.add(well_or_range)
+                self._excluded_wells.add(self._mwp.remove_leading_zeroes(well_or_range))
 
     def _preprocess_operation_log(self):
         """Preprocess OperationLog sheet
