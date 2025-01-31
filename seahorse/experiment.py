@@ -753,7 +753,7 @@ class SeahorseExperiment:
         return to_long(normalization_values)
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}({self.config('Project Name')})>"
+        return f"<{self.__class__.__name__}({self.title})>"
 
 
 def multi_well_mosaic_96() -> list[list[str]]:
