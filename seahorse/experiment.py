@@ -3,6 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import dateutil
 
 from .C import (
     SHEET_CONFIGURATION,
@@ -73,14 +74,8 @@ class SeahorseExperiment:
         `Equilibrate`.
         """
         df_log = self.log
-
-        # pd.to_datetime sometimes raises:
-        #  UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`.
-        #  To ensure parsing is consistent and as-expected, please specify a format.
-        #  Happens only if date format was messed up. Initially it corresponds to `2022-03-16 16:28:57`, which pandas
-        #  handles well.
-        df_log["start_dt"] = pd.to_datetime(df_log["Start Time"])
-        df_log["end_dt"] = pd.to_datetime(df_log["End Time"])
+        df_log["start_dt"] = df_log["Start Time"].apply(dateutil.parser.parse)
+        df_log["end_dt"] = df_log["End Time"].apply(dateutil.parser.parse)
 
         # t = 0: see docstring
         t0 = df_log["end_dt"][
