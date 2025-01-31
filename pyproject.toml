@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "seahorse"
-version = "0.0.0a0"
+dynamic = ["version"]
 authors = [
     {name = "Daniel Weindl", email = "sci@danielweindl.de"},
 ]
@@ -13,8 +13,10 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "BSD-3-Clause"}
 dependencies = [
+    "python-dateutil",
     "pandas>=2.2.0rc0",
     "matplotlib>=3.0",
+    "plotnine>=0.8.0",
     # for faster reading of ods files and more robust reading of xlsx files
     "python-calamine>=0.1.7",
 ]
@@ -23,10 +25,18 @@ dependencies = [
 seahorse-vis = "seahorse.cli:vis_cli"
 
 [project.optional-dependencies]
-test = ["pytest", "pre-commit"]
+test = ["pytest", "pre-commit", "pooch"]
+petab = ["petab>=0.5.0"]
 
-[tool.black]
-line-length = 79
+[project.urls]
+Homepage = "https://github.com/dweindl/seahorse"
+Repository = "https://github.com/dweindl/seahorse.git"
+"Bug Tracker" = "https://github.com/dweindl/seahorse/issues"
 
 [tool.semantic_release]
 version_toml = "pyproject.toml:project.version"
+
+[tool.setuptools_scm]
+
+[tool.ruff]
+# line-length = 79
