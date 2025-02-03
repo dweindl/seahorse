@@ -12,7 +12,7 @@ from .C import (
     SHEET_RATE,
     SHEET_RAW,
 )
-from .multi_well import MultiWellPlate
+from .multi_well import MultiWellPlate, PlateData
 
 
 class SeahorseExperiment:
@@ -161,7 +161,63 @@ class SeahorseExperiment:
         # TODO to proper data types
         config = {t[1]: t[2] for t in df.itertuples() if not pd.isna(t[1])}
         config = {k.removesuffix(":").strip(): v for k, v in config.items()}
+
+        # parse per-well configuration
+        config["Group Layout"] = self._collect_plate_config("Group Layout", str)
+        config["Normalization Values"] = self._collect_plate_config(
+            "Normalization Values:", float
+        )
+        config["Buffer Factor"] = self._collect_plate_config("Buffer Factor :", float)
+
         return config[key] if key else config
+
+    def _collect_plate_config(self, field: str, dtype=None) -> PlateData:
+        """Collect data from the configuration sheet that is given
+        as multi-well plate layout.
+
+        E.g., buffer factor information per-well, or normalization values.
+        """
+        df = self._df_all[SHEET_CONFIGURATION]
+        # start and end of the plate layout, including labels
+        start_row_idx = df[df.iloc[:, 0] == field].index[0]
+        start_col_idx = 1
+        end_row_idx = start_row_idx + self._mwp.nrows
+        end_col_idx = start_col_idx + self._mwp.ncols
+
+        # check that labels match
+        if (
+            not np.all(
+                df.iloc[start_row_idx, start_col_idx + 1 : end_col_idx + 1].astype(int)
+                == list(self._mwp.iter_cols())
+            )
+            or not np.all(
+                df.iloc[start_row_idx + 1 : end_row_idx + 1, start_col_idx]
+                == list(self._mwp.iter_rows())
+            )
+            # check that we have NaNs to the right and below
+            or not df.iloc[end_row_idx + 1, start_col_idx + 1 : end_col_idx + 1]
+            .isna()
+            .all()
+            or not df.iloc[start_row_idx : end_row_idx + 1, end_col_idx + 1]
+            .isna()
+            .all()
+        ):
+            raise AssertionError(
+                "Unexpected plate layout:\n"
+                + str(
+                    df.iloc[
+                        start_row_idx : end_row_idx + 1, start_col_idx : end_col_idx + 1
+                    ]
+                )
+            )
+
+        data = df.iloc[
+            start_row_idx + 1 : end_row_idx + 1, start_col_idx + 1 : end_col_idx + 1
+        ]
+        if dtype is not None:
+            data = data.astype(dtype)
+
+        return PlateData(self._mwp, data)
 
     @property
     def log(self):

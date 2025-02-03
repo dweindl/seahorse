@@ -2,6 +2,8 @@
 
 import re
 from string import ascii_uppercase
+import numpy as np
+import pandas as pd
 
 
 class MultiWellPlate:
@@ -72,3 +74,28 @@ class MultiWellPlate:
         """Remove leading zeroes from well."""
         row, col = self.split_well(well)
         return f"{row}{col}"
+
+
+class PlateData:
+    """Represent data in a multi-well plate."""
+
+    def __init__(self, plate: MultiWellPlate, data: np.ndarray):
+        self.plate = plate
+        if isinstance(data, pd.DataFrame):
+            data = data.values
+
+        # TODO: as xarray?
+        self.data = data
+
+        if data.shape != (plate.nrows, plate.ncols):
+            raise ValueError("Data shape must match plate dimensions")
+
+    def to_df(self) -> pd.DataFrame:
+        """Convert to a DataFrame."""
+        return pd.DataFrame(
+            self.data,
+            index=list(self.plate.iter_rows()),
+            columns=list(self.plate.iter_cols()),
+        )
+
+    # TODO implement __getitem__ and __setitem__ to access data by well name
